@@ -2,12 +2,28 @@
 
 ## Install
 
-Use Node.js 22 or 24 LTS and npm (library minimum: 20.18.1). From the source
-checkout run `npm ci`, `npm test`, `npm run typecheck`, then `npm pack`.
-Install the resulting artifact in your application:
+Use Node.js 24 and npm (library minimum: 20.18.1).
+
+Install from npm after publication:
+
+```sh
+npm install facebook-api-mcp
+# Release candidates:
+npm install facebook-api-mcp@next
+```
+
+Or install directly from GitHub, including before the first npm release:
+
+```sh
+npm install github:tas33n/facebook-api-mcp
+```
+
+Pin a Git tag/full commit with `github:tas33n/facebook-api-mcp#<tag-or-commit>`
+for a reproducible deployment. Both options install the `facebook-api-mcp` import.
+
+Windows environment setup:
 
 ```powershell
-npm install 'D:\packages\facebook-api-mcp-3.5.0-rc.2.tgz'
 $env:FACEBOOK_APP_STATE_PATH = 'D:\private\facebook-appstate.json'
 node bot.cjs
 ```
@@ -15,15 +31,12 @@ node bot.cjs
 Linux/macOS:
 
 ```sh
-npm install /packages/facebook-api-mcp-3.5.0-rc.2.tgz
 export FACEBOOK_APP_STATE_PATH=/private/facebook-appstate.json
 node bot.cjs
 ```
 
-Alternatively unpack the tarball into `vendor/facebook-api-mcp` and use
-`"facebook-api-mcp": "file:vendor/facebook-api-mcp"`. Commit that runtime snapshot,
-licenses and application lockfile together. Tests stay in the source checkout;
-the npm allowlist excludes tests, private state and research artifacts.
+Commit the application lockfile after installation. The distributed package
+excludes development tests, private state and research artifacts.
 
 ## Account state
 
@@ -129,7 +142,9 @@ npm pack
 
 The generator updates sections inside API_REFERENCE.md and MCP.md. Package tests
 check the runtime manifest, API assembly and MCP cleanup. Install the tarball in a
-clean consumer and run its checks. CI targets Linux Node 20/22/24 and Windows 22;
+clean consumer and run its checks. CI uses one Ubuntu 24.04 / Node.js 24 job,
+including the dependency audit. Publishing reuses that job instead of running
+duplicate push validation; other branches and pull requests use it directly.
 remote CI and publishing need the actual repository/publisher configuration.
 Local packing does not publish or reserve a name. Version each vendor snapshot
 and retain LICENSE and ATTRIBUTION.md.

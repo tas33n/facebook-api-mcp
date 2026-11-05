@@ -9,25 +9,38 @@ This unofficial client uses cookie-authenticated web protocols. Core messaging,
 selected publishing and discovery flows have selected-account live checks;
 experimental features are identified in the [API reference](docs/API_REFERENCE.md#capability-limits).
 
-## Install from source
+## Installation
 
-From this checkout:
+### From npm
 
-```sh
-npm ci
-npm test
-npm run typecheck
-npm pack
-```
-
-In your bot project, install the resulting local artifact:
+Install a published stable release:
 
 ```sh
-npm install /absolute/path/facebook-api-mcp-3.5.0-rc.2.tgz
+npm install facebook-api-mcp
 ```
 
-No npm publication or repository URL is assumed. See [setup](docs/SETUP.md) for
-cookie files, Windows commands, vendoring and environment settings.
+For published release candidates:
+
+```sh
+npm install facebook-api-mcp@next
+```
+
+Registry commands require a successful publication to the corresponding dist-tag.
+If no release is available yet, install directly from GitHub.
+
+### Directly from GitHub
+
+```sh
+npm install github:tas33n/facebook-api-mcp
+```
+
+This installs the default branch of
+[tas33n/facebook-api-mcp](https://github.com/tas33n/facebook-api-mcp).
+For reproducible deployments, pin a published Git tag or full commit SHA using
+`github:tas33n/facebook-api-mcp#<tag-or-commit>`.
+
+Both options use the same import: `require("facebook-api-mcp")`.
+See [setup](docs/SETUP.md) for cookies, environment settings and lifecycle guidance.
 
 ## Simple bot
 

@@ -16,23 +16,12 @@ concurrency:
 jobs:
   test:
     name: Validate package
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      - run: npm ci
-      - run: npm test
-      - run: npm run typecheck
-      - run: npm audit --audit-level=low
-      - run: npm pack --dry-run --ignore-scripts
+    uses: ./.github/workflows/ci.yml
 
   publish:
     name: Publish to npmjs.org
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: write

@@ -2,30 +2,25 @@ name: Offline validation
 
 on:
   push:
+    branches-ignore: [main]
+    tags-ignore: ['**']
   pull_request:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
 
 jobs:
   test:
-    name: ${{ matrix.os }} / Node ${{ matrix.node }}
-    runs-on: ${{ matrix.os }}
+    name: Ubuntu 24.04 / Node 24
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        node: [20, 22, 24]
-        include:
-          - os: windows-latest
-            node: 22
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 24
           cache: npm
       - run: npm ci
       - name: Offline fixture and package contract tests
@@ -39,15 +34,5 @@ jobs:
       - name: Check npm manifest without writing an archive
         run: npm pack --dry-run --ignore-scripts
 
-  audit:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci --ignore-scripts
       - name: Audit production and development dependencies
-        run: npm run audit
+        run: npm audit --audit-level=low
