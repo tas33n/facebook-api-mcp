@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "test": "node --test test/*.test.js",
-    "typecheck": "tsc --noEmit --strict --types node --target ES2022 --module preserve --moduleResolution bundler index.d.ts lib/mcp/index.d.ts",
+    "typecheck": "tsc --ignoreConfig --noEmit --strict --types node --target ES2022 --module preserve --moduleResolution bundler index.d.ts lib/mcp/index.d.ts",
     "mcp": "node bin/facebook-api-mcp.js",
     "docs:generate": "node scripts/generate-reference.js",
     "test:package": "node --test test/package-contract.test.js",

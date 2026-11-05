@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- `npm run typecheck` passes `--ignoreConfig`, so a checkout nested inside
+  another TypeScript project (for example as a host-application submodule)
+  no longer fails with TS5112 because of the parent `tsconfig.json`.
+
 ## 3.5.0-rc.2 — unreleased
 
 - Facebook API MCP identity, with preserved Nexus-FCA
