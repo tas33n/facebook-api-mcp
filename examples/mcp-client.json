@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "facebook": {
+      "command": "node",
+      "args": ["/absolute/path/to/facebook-api-mcp/bin/facebook-api-mcp.js"],
+      "env": {
+        "FACEBOOK_APP_STATE_PATH": "/absolute/private/path/appstate.json",
+        "FACEBOOK_ACTION_LEDGER_PATH": "/absolute/private/path/facebook-actions.json"
+      }
+    }
+  }
+}
