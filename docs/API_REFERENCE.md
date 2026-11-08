@@ -290,7 +290,7 @@ Numeric comment IDs need post context; reply checks may need `parentFeedbackID`
 and `expansionToken`. A missing item in a partial page is not verified deletion.
 Profile video publication defaults Public. Generic `publishVideo`, dedicated
 `publishReel` and `createStory` remain experimental; do not use them as automatic
-fallbacks. Reels need actual deployment `placements`; Stories require
+fallbacks. `publishReel` sends `actor_id` and the web composer's full input with `placements` defaulting to `["FACEBOOK_REEL"]`; Facebook accepts it, but videos staged by `uploadVideo` stay `UPLOADING` (live check 2026-11-08). For a Reel, publish a vertical video with `publishVideoPost`. `publishVideo` fails `1675030` for personal profiles. Stories require
 `privacy: "current"`, and text Stories need current `fontID`/`textPresetID`.
 Stage separate media for separate publications; upload does not publish.
 

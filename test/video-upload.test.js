@@ -199,12 +199,15 @@ test("video publishing uses the observed input and only confirms a returned vide
   assert.equal("privacy" in input, false);
 });
 
-test("reel publishing requires explicit placements and distinguishes drafts", async () => {
+test("reel publishing sends the web composer input with actor_id and default placement", async () => {
   const h = harness({ graphql: () => ({ statusCode: 200, body: { data: { cpx_reel_publish: { success: true, published_video_id: "900" } } } }) });
-  for (const placements of [undefined, [], [""], [4]]) await assert.rejects(h.reel({ videoID: "456", placements }), /placements/);
+  for (const placements of [[], [""], [4], "FACEBOOK_REEL"]) await assert.rejects(h.reel({ videoID: "456", placements }), /placements/);
+  await assert.rejects(h.reel({ videoID: "456", durationSeconds: -1 }), /durationSeconds/);
   assert.equal(h.calls.length, 0);
-  assert.deepEqual(await h.reel({ videoID: "456", caption: "Caption", placements: ["FIXTURE_DEPLOYMENT_VALUE"], draft: true }), { videoID: "900", published: false, draft: true });
+  assert.deepEqual(await h.reel({ videoID: "456", caption: "Caption", draft: true }), { videoID: "900", published: false, draft: true });
   const { input } = JSON.parse(h.calls[0].form.variables);
+  assert.equal(input.actor_id, "123");
+  assert.deepEqual(input.placements, ["FACEBOOK_REEL"]);
   assert.equal(input.metadata.caption, "Caption");
   assert.equal(input.metadata.is_draft, true);
   assert.equal(input.should_skip_encoding, false);
@@ -212,7 +215,13 @@ test("reel publishing requires explicit placements and distinguishes drafts", as
   assert.equal(input.trim_timestamps, null);
   assert.deepEqual(input.video_collaboration, { collaborators: [] });
   assert.deepEqual(input.audio_enhancement, { processing: 0 });
-  assert.equal("thumbnail_type" in input, false);
+  assert.equal(input.thumbnail_type, "generated_default");
+  assert.equal(input.is_boost_toggle_on, false);
+  assert.equal("total_video_duration" in input, false);
+  await h.reel({ videoID: "456", placements: ["FACEBOOK_REEL", "FACEBOOK_NEWS_FEED"], durationSeconds: 6 });
+  const second = JSON.parse(h.calls[1].form.variables).input;
+  assert.deepEqual(second.placements, ["FACEBOOK_REEL", "FACEBOOK_NEWS_FEED"]);
+  assert.equal(second.total_video_duration, 6);
 });
 
 test("publish failures and missing success evidence never retry and invoke callbacks once", async () => {

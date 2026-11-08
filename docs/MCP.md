@@ -100,7 +100,7 @@ Tools appear only when their corresponding FCA function exists on the injected A
 | `facebook_get_events` | injected event buffer | `after?`, `limit?` | Read non-consuming event page |
 | `facebook_create_story` | `createStory` | exactly one `photoID`/`videoID`/`text`, `privacy`, text formatting IDs when using text | Create a Story |
 | `facebook_publish_video` | `publishVideo` | `videoID`, `title?`, `description?`, `targetID?` | Publish staged video |
-| `facebook_publish_reel` | `publishReel` | `videoID`, `placements`, `caption?`, `draft?`, `enableRemix?`, `embeddable?` | Publish/draft staged Reel |
+| `facebook_publish_reel` | `publishReel` | `videoID`, `placements?`, `caption?`, `draft?`, `enableRemix?`, `embeddable?` | Publish/draft staged Reel |
 
 Post/comment creation and reactions have selected-account live evidence; current
 web operation IDs remain deployment-sensitive. Text posts require an explicit
@@ -118,7 +118,7 @@ Story, video and Reel publishing adapters are **experimental and not live-verifi
 
 `facebook_create_story` requires exactly one of `photoID`, `videoID`, or `text`, and requires `privacy: "current"` explicitly. This uses the account's existing **Story** audience settings. Text additionally requires decimal-string `textPresetID` and `fontID` from the current Story composer. The runtime rejects conflicting content types and incomplete formatting IDs before calling FCA. Results such as `{ storyID, status: "accepted", published: null, verification }` are preserved: accepted does not establish that encoding/publication completed.
 
-`facebook_publish_video` accepts `videoID`, optional `title`, `description` and `targetID`. `facebook_publish_reel` accepts `videoID`, a nonempty array of deployment-supported `placements` strings (maximum 20, 128 characters each), optional `caption`, and optional boolean `draft`, `enableRemix`, and `embeddable`. No placement enum is invented. Video/Reel audience behavior is determined by the web backend; these tools expose no privacy field and make no claim that the current audience is preserved. Provider publication/draft results are returned as supplied.
+`facebook_publish_video` accepts `videoID`, optional `title`, `description` and `targetID`. `facebook_publish_reel` accepts `videoID`, an optional nonempty array of `placements` strings (default `["FACEBOOK_REEL"]`, maximum 20, 128 characters each), optional `caption`, and optional boolean `draft`, `enableRemix`, and `embeddable`. Facebook accepts the mutation, but videos staged by `uploadVideo` currently stay `UPLOADING`; publish a vertical video with `publishVideoPost` to get a Reel. Video/Reel audience behavior is determined by the web backend; these tools expose no privacy field and make no claim that the current audience is preserved. Provider publication/draft results are returned as supplied.
 
 Facebook user/thread IDs are decimal strings, preserving precision. Message IDs are nonempty strings, at most 256 characters, without whitespace/control characters. Message text is bounded to 20,000 characters. `reaction: ""` removes a reaction; `nickname: ""` resets a nickname. Mutations execute immediately using the current account and are never automatically retried by the MCP adapter. A provider response such as `{ "queued": true }` is returned as-is and is not treated as proof of remote acknowledgement.
 
@@ -272,7 +272,7 @@ For argument types/defaults, your MCP client's `tools/list` exposes the authorit
 | `facebook_publish_video_post` | `publishVideoPost` | `videoID`, `description?`, `audience?` | no |
 | `facebook_create_story` | `createStory` | `photoID?`, `videoID?`, `text?`, `privacy`, `textPresetID?`, `fontID?` | no |
 | `facebook_publish_video` | `publishVideo` | `videoID`, `title?`, `description?`, `targetID?` | no |
-| `facebook_publish_reel` | `publishReel` | `videoID`, `caption?`, `placements`, `draft?`, `enableRemix?`, `embeddable?` | no |
+| `facebook_publish_reel` | `publishReel` | `videoID`, `caption?`, `placements?`, `draft?`, `enableRemix?`, `embeddable?` | no |
 | `facebook_create_post` | `createPost` | `text`, `audience`, `groupID?` | no |
 | `facebook_create_comment` | `createCommentPost` | `postID`, `text`, `replyCommentID?` | no |
 | `facebook_set_post_reaction` | `setPostReaction` | `postID`, `reaction` | no |
