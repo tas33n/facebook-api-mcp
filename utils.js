@@ -431,11 +431,17 @@ function generateClientID() {
     return `mqttwsclient_${timestamp}_${random}_${counter}`;
 }
 
+// One MQTT device identity per process. Facebook binds the message sync queue
+// to this device id; switching it on every reconnect (e.g. when the device file
+// cannot be written) can silently stop message delivery after a reconnect.
+var cachedGUID = null;
+
 function getGUID() {
     // 1. Check Environment Variable (Best for Render/Heroku/Replit)
     if (process.env.FACEBOOK_DEVICE_ID) {
         return process.env.FACEBOOK_DEVICE_ID;
     }
+    if (cachedGUID) return cachedGUID;
 
     var path = require("path");
     var fs = require("fs");
@@ -445,7 +451,10 @@ function getGUID() {
     try {
         if (fs.existsSync(devicePath)) {
             var data = JSON.parse(fs.readFileSync(devicePath, "utf8"));
-            if (data && data.guid) return data.guid;
+            if (data && data.guid) {
+                cachedGUID = data.guid;
+                return cachedGUID;
+            }
         }
     } catch (e) { }
 
@@ -459,14 +468,19 @@ function getGUID() {
     });
 
     // 4. Save & Log
+    var log = require("npmlog");
+    cachedGUID = id;
     try {
         fs.mkdirSync(path.dirname(devicePath), { recursive: true });
         fs.writeFileSync(devicePath, JSON.stringify({ guid: id, generatedAt: Date.now() }, null, 2));
-    } catch (e) { }
-
-    // Warn user to verify persistence
-    var log = require("npmlog");
-    log.info("Facebook API MCP", "Created a persistent local MQTT device identity.");
+        log.info("Facebook API MCP", "Created a persistent local MQTT device identity.");
+    } catch (e) {
+        log.warn(
+            "Facebook API MCP",
+            "Could not save the MQTT device identity (" + (e && e.code ? e.code : "write failed") + " at " + devicePath +
+            "). Using it for this process only; set FACEBOOK_DEVICE_FILE to a writable path or FACEBOOK_DEVICE_ID."
+        );
+    }
 
     return id;
 }

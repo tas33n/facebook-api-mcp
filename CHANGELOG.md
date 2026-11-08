@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Fix a listener that stays "ready" but stops receiving messages after a
+  reconnect: the MQTT device id is now kept for the whole process even when
+  `FACEBOOK_DEVICE_FILE` cannot be written (a write failure is logged instead of
+  silently generating a new device id on every reconnect), and `/t_ms` sync
+  errors (`errorCode`) recreate the sync queue via a fresh sequence id instead
+  of emitting `ready`. Repeated sync failures report `stop_listen` to the host.
 - `npm run typecheck` passes `--ignoreConfig`, so a checkout nested inside
   another TypeScript project (for example as a host-application submodule)
   no longer fails with TS5112 because of the parent `tsconfig.json`.

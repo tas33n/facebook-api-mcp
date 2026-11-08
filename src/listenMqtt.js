@@ -1014,6 +1014,13 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
           timestamp: Date.now().toString(),
         });
       } else if (topic === "/t_ms" || topic === "/t_ms_gd") {
+        // Facebook answers a stale/unknown sync queue with an errorCode and then
+        // delivers no deltas. Treating that as "ready" leaves a connected but
+        // deaf listener, so recreate the queue instead.
+        if (jsonMessage.errorCode) {
+          recoverSyncQueue(ctx, globalCallback, String(jsonMessage.errorCode));
+          return;
+        }
         if (ctx.tmsWait && typeof ctx.tmsWait == "function") { ctx.tmsWait(); }
         if (jsonMessage.firstDeltaSeqId && jsonMessage.syncToken) { ctx.lastSeqId = jsonMessage.firstDeltaSeqId; ctx.syncToken = jsonMessage.syncToken; }
         if (jsonMessage.lastIssuedSeqId) { ctx.lastSeqId = parseInt(jsonMessage.lastIssuedSeqId); }
@@ -1103,6 +1110,27 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     }, 55000 + Math.floor(Math.random() * 20000));
   }
 }
+function recoverSyncQueue(ctx, globalCallback, errorCode) {
+  if (ctx._intentionalMqttStop) return;
+  const now = Date.now();
+  ctx._syncRecoveries = (ctx._syncRecoveries || []).filter((time) => now - time < 10 * 60 * 1000);
+  ctx._syncRecoveries.push(now);
+  clearTimeout(ctx._tmsWaitTimer);
+  if (ctx.health) ctx.health.onError('sync_queue_error');
+  if (ctx._syncRecoveries.length > 3) {
+    log.error('listenMqtt', `Facebook message sync keeps failing (${errorCode}); asking the application to restart the session.`);
+    globalCallback({ type: "stop_listen", error: `Facebook message sync failed repeatedly: ${errorCode}` });
+    return;
+  }
+  log.warn('listenMqtt', `Facebook rejected the message sync (${errorCode}); recreating the sync queue.`);
+  ctx.syncToken = undefined;
+  ctx.lastSeqId = null;
+  if (ctx._reconnectTimer) clearTimeout(ctx._reconnectTimer);
+  if (ctx.mqttClient) { try { ctx.mqttClient.end(true); } catch (_) { } }
+  // getSeqID fetches a fresh sequence id, then reconnects with create_queue.
+  getSeqID();
+}
+
 function scheduleAdaptiveReconnect(defaultFuncs, api, ctx, globalCallback, reason) {
   if (ctx._intentionalMqttStop || !ctx.globalOptions.autoReconnect) return;
   const state = getBackoffState(ctx);
